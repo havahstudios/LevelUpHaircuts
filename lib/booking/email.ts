@@ -1,15 +1,20 @@
 import "server-only";
+import nodemailer from "nodemailer";
 import { Resend } from "resend";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { formatWhen } from "@/lib/booking/time";
 import { fullAddress, site } from "@/lib/site";
 
-// Booking emails. They never block a booking: if Resend is not set up or a
+// Booking emails. They never block a booking: if sending is not set up or a
 // send fails, the booking is still saved and the problem is logged.
 //
-// BOOKING_FROM_EMAIL must use a domain verified in Resend before customers can
-// be emailed. Until then (Resend's test sender) only the salon is emailed, and
-// Resend only delivers to the address the Resend account was created with.
+// How mail is sent, first match wins:
+//   1. Gmail: GMAIL_USER + GMAIL_APP_PASSWORD (a Google "app password")
+//   2. Resend: RESEND_API_KEY (customers only once BOOKING_FROM_EMAIL uses a verified domain)
+//   3. Neither: emails are written to the server log instead
+//
+// Test mode: EMAIL_REDIRECT_TO sends every email (salon and customer) to that
+// one address, with the real recipient shown in the subject.
 
 export type EmailBooking = {
   startsAt: string;
@@ -78,8 +83,14 @@ export async function sendBookingEmails(kind: EmailKind, b: EmailBooking) {
   type Msg = { to: string; subject: string; html: string; text: string };
   const messages: Msg[] = [];
   const salon = kind === "request" || kind === "cancelled" ? await salonAddress() : null;
-  const from = process.env.BOOKING_FROM_EMAIL || "Level-Up Hair Salon <onboarding@resend.dev>";
-  const canEmailCustomers = !from.includes("resend.dev") && Boolean(b.client.email);
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  const useGmail = Boolean(gmailUser && gmailPass);
+  const redirect = process.env.EMAIL_REDIRECT_TO || "";
+  const from = useGmail
+    ? `${site.name} <${gmailUser}>`
+    : process.env.BOOKING_FROM_EMAIL || "Level-Up Hair Salon <onboarding@resend.dev>";
+  const canEmailCustomers = Boolean(b.client.email) && (useGmail || Boolean(redirect) || !from.includes("resend.dev"));
 
   if (kind === "request" && salon) {
     const status = "Waiting for you";
@@ -157,20 +168,33 @@ export async function sendBookingEmails(kind: EmailKind, b: EmailBooking) {
     }
   }
 
-  if (!key) {
-    for (const m of messages) console.log(`[email] not sent (no RESEND_API_KEY) ${kind} -> ${m.to}: ${m.subject}`);
+  // Test mode: everything goes to one inbox, labelled with who it was for.
+  const outgoing = redirect
+    ? messages.map((m) => ({ ...m, to: redirect, subject: m.to === salon ? m.subject : `[Customer email for ${m.to}] ${m.subject}` }))
+    : messages;
+
+  if (!useGmail && !key) {
+    for (const m of outgoing) console.log(`[email] not sent (no email service set up) ${kind} -> ${m.to}: ${m.subject}`);
     if (kind === "request" && respondUrl) console.log(`[email] accept/decline link: ${respondUrl}`);
     return;
   }
 
-  const resend = new Resend(key);
-  for (const m of messages) {
+  const gmail = useGmail
+    ? nodemailer.createTransport({ host: "smtp.gmail.com", port: 465, secure: true, auth: { user: gmailUser, pass: gmailPass } })
+    : null;
+  const resend = !useGmail && key ? new Resend(key) : null;
+
+  for (const m of outgoing) {
     try {
-      const { error } = await resend.emails.send({ from, ...m });
-      if (error) console.error(`[email] ${kind} to ${m.to} failed:`, error.message);
-      else console.log(`[email] sent ${kind} -> ${m.to}`);
+      if (gmail) {
+        await gmail.sendMail({ from, ...m });
+      } else if (resend) {
+        const { error } = await resend.emails.send({ from, ...m });
+        if (error) throw new Error(error.message);
+      }
+      console.log(`[email] sent ${kind} -> ${m.to}`);
     } catch (error) {
-      console.error(`[email] ${kind} to ${m.to} failed`, error);
+      console.error(`[email] ${kind} to ${m.to} failed:`, error instanceof Error ? error.message : error);
     }
   }
 }

@@ -327,3 +327,8 @@ This replaces "instant booking" (Phase 3 decision) for **online** bookings only.
 - Staff schedule has a **Month** view next to Day and Week: whole weeks of the month, up to 3 appointments per day with "+ N more", a pending count per day, click a day to open it, click an appointment to open it
 - Footer: **Staff login** link to `/admin` and the standard **Built by Havah Studios** pill (same as Benny's Grill), linking to havahstudios.live
 - Salon booking alerts go to havahstudios@gmail.com (set in Hours & settings). Sending needs the Resend API key
+
+## Emails through Gmail, test mode (Sunday 8 November 2026, owner request)
+- Resend put on hold. Emails now send from the owner's Gmail (`GMAIL_USER` + `GMAIL_APP_PASSWORD`, a Google app password). Resend still works as a fallback if a key is added later
+- Test mode on: `EMAIL_REDIRECT_TO=havahstudios@gmail.com` sends every email (salon Accept / Decline and all customer emails) to that inbox, customer ones labelled "[Customer email for ...]". Remove it to send customer emails to customers
+- Dry run passed: the right emails are built and addressed correctly. Waiting for the Gmail app password to actually send
