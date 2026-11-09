@@ -16,14 +16,15 @@ export default function Hero() {
   const imageY = useTransform(scrollYProgress, [0, 1], reduce ? ["0%", "0%"] : ["0%", "50%"]);
 
   return (
-    <section ref={ref} id="top" className="relative flex h-[100svh] min-h-[640px] items-center justify-center overflow-hidden bg-ink">
+    <section ref={ref} id="top" className="relative flex h-[100svh] min-h-[640px] items-center justify-center overflow-hidden bg-cream">
       <motion.div style={{ y: imageY }} className="absolute inset-0">
-        <Image src="/images/ai/hero.webp" alt="Stylist cutting long dark hair with professional shears" fill priority sizes="100vw" className="object-cover" />
+        <Image src="/images/ai/salon-interior.webp" alt="Bright salon with black chairs, brass mirrors and warm pendant lights" fill priority sizes="100vw" className="object-cover" />
       </motion.div>
-      <div className="absolute inset-0 bg-ink/50" />
+      <div className="absolute inset-0 bg-ink/40" />
+      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-[linear-gradient(to_top,rgba(20,18,16,0.35),transparent)]" />
 
       <div className="relative z-10 px-4 text-center text-white">
-        <h1 className="text-white">
+        <h1 className="text-white [text-shadow:0_2px_24px_rgba(0,0,0,0.25)]">
           <span className="mb-6 block font-sans text-[13px] font-bold uppercase tracking-[0.3em] text-white/85 md:text-[14px]">
             Unisex hair salon in Los Angeles
           </span>

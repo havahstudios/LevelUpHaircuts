@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { signIn, type LoginState } from "../auth-actions";
 
 const input =
-  "w-full border-b border-white/20 bg-transparent py-4 text-center text-[16px] text-white outline-none placeholder:text-white/40 focus:border-gold";
+  "w-full border-b border-line bg-transparent py-4 text-center text-[16px] text-ink outline-none placeholder:text-muted focus:border-gold";
 
 export default function LoginForm() {
   const [state, action, pending] = useActionState<LoginState, FormData>(signIn, { message: "" });
@@ -23,7 +23,7 @@ export default function LoginForm() {
         {pending ? "Signing in..." : "Sign in"}
       </button>
       {state.message && (
-        <p role="alert" className="pt-3 text-[14px] font-bold text-[#f08a73]">
+        <p role="alert" className="pt-3 text-[14px] font-bold text-[#a3341f]">
           {state.message}
         </p>
       )}

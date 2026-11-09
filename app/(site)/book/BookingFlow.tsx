@@ -397,7 +397,7 @@ function DetailsStep({
           <textarea name="note" rows={2} placeholder="Anything we should know? (optional)" className={`${field} resize-none`} />
         </Field>
         <div className="mt-6 sm:col-span-2">
-          <button type="submit" disabled={sending} className="group inline-flex items-center gap-3 rounded-[4px] bg-ink px-8 py-4 text-[14px] font-bold text-white disabled:opacity-60">
+          <button type="submit" disabled={sending} className="group inline-flex items-center gap-3 rounded-[4px] bg-gold px-8 py-4 text-[14px] font-bold text-ink disabled:opacity-60">
             {sending ? "Booking..." : <SwitchText>Confirm booking</SwitchText>}
           </button>
           {message && (

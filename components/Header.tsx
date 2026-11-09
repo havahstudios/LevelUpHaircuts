@@ -10,12 +10,14 @@ import SocialLinks from "@/components/SocialLinks";
 import { navLinks } from "@/lib/content";
 
 const MotionLink = motion.create(Link);
-// Transparent over the hero, then a solid dark bar once you scroll.
+// Transparent at the top, then a frosted white bar once you scroll.
 export default function Header() {
   const { scrollY } = useScroll();
   const [solid, setSolid] = useState(false);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  // White text only while floating over the home page photo; dark text everywhere else.
+  const onPhoto = pathname === "/" && !solid;
 
   useMotionValueEvent(scrollY, "change", (y) => {
     setSolid(y > 120);
@@ -31,10 +33,10 @@ export default function Header() {
     <>
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-colors duration-500 ${
-          solid || pathname.startsWith("/book/manage") ? "bg-ink/95 shadow-[0_10px_30px_rgba(0,0,0,0.15)] backdrop-blur" : "bg-transparent"
+          solid ? "border-b border-line/70 bg-white/85 backdrop-blur-md" : "bg-transparent"
         }`}
       >
-        <div className={`mx-auto grid max-w-[1320px] grid-cols-[1fr_auto_1fr] items-center px-4 h-[84px] text-white md:px-8`}>
+        <div className={`mx-auto grid h-[84px] max-w-[1320px] grid-cols-[1fr_auto_1fr] items-center px-4 md:px-8 ${onPhoto ? "text-white" : "text-ink"}`}>
           <div className="flex items-center gap-8">
             <nav className="hidden items-center gap-8 lg:flex" aria-label="Main">
               {left.map((l) => (
@@ -49,12 +51,12 @@ export default function Header() {
               className="-ml-2 grid h-11 w-11 place-items-center lg:hidden"
               aria-label="Open menu"
             >
-              <span className="block h-px w-6 bg-white shadow-[0_-7px_0_white,0_7px_0_white]" />
+              <span className={`block h-px w-6 ${onPhoto ? "bg-white shadow-[0_-7px_0_white,0_7px_0_white]" : "bg-ink shadow-[0_-7px_0_#141210,0_7px_0_#141210]"}`} />
             </button>
           </div>
 
           <Link href="/" aria-label="Level-Up Hair Salon home" className="px-6">
-            <Logo light />
+            <Logo light={onPhoto} />
           </Link>
 
           <div className="flex items-center justify-end gap-8">
@@ -67,7 +69,7 @@ export default function Header() {
             </nav>
             <Link
               href="/book"
-              className="hidden rounded-[4px] border border-gold px-5 py-2.5 text-[13px] font-bold uppercase tracking-[0.15em] text-gold xl:inline-block group"
+              className="group hidden rounded-[4px] bg-gold px-5 py-2.5 text-[13px] font-bold uppercase tracking-[0.15em] text-ink xl:inline-block"
             >
               <SwitchText>Book now</SwitchText>
             </Link>
@@ -79,14 +81,14 @@ export default function Header() {
       <AnimatePresence>
         {open && (
           <motion.div
-            className="fixed inset-0 z-[60] flex flex-col bg-ink px-6 pb-10 pt-6 text-white"
+            className="fixed inset-0 z-[60] flex flex-col bg-paper px-6 pb-10 pt-6 text-ink"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
           >
             <div className="flex items-center justify-between">
-              <Logo light />
+              <Logo />
               <button type="button" onClick={() => setOpen(false)} className="grid h-11 w-11 place-items-center text-3xl leading-none" aria-label="Close menu">
                 ×
               </button>
@@ -97,7 +99,7 @@ export default function Header() {
                   key={l.label}
                   href={l.href}
                   onClick={() => setOpen(false)}
-                  className="font-display text-[40px] leading-[1.3] text-white hover:text-gold"
+                  className="font-display text-[40px] leading-[1.3] tracking-[-0.04em] text-ink hover:text-gold-deep"
                 >
                   {l.label}
                 </MotionLink>

@@ -13,7 +13,7 @@ export default function BookCta() {
           <p className="mt-6 max-w-[460px]">
             Pick your service, your stylist (or whoever is free) and a time that suits you. You&apos;ll see only the times that are really open, and your booking is confirmed straight away.
           </p>
-          <Link href="/book" className="group mt-10 inline-flex items-center gap-3 rounded-[4px] bg-ink px-8 py-4 text-[14px] font-bold text-white">
+          <Link href="/book" className="group mt-10 inline-flex items-center gap-3 rounded-[4px] bg-gold px-8 py-4 text-[14px] font-bold text-ink">
             <SwitchText>Book online</SwitchText>
           </Link>
         </div>

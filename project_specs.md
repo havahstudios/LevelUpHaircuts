@@ -260,3 +260,11 @@ The one long homepage is split into five pages. The header and footer link betwe
   - `cacheComponents` switched off in `next.config.ts` (staff pages read the login on every request; same as the MSJ site)
   - Starting service lengths (45 to 120 minutes) and stylists (Norma, Sara, Isabella) are placeholders for the salon to correct in the dashboard
   - **Not yet tested end to end:** needs the Supabase project and keys. Build, lint and type check pass; pages show "not set up yet" messages until then
+
+## Lighter, more modern look (Sunday 8 November 2026, owner request)
+
+- Fewer dark areas: header turns frosted white on scroll (dark text off the home photo), inner-page banners are now light cream with the title beside a rounded photo, footer and contact card are light, promo and feature photos have lighter shading, gallery viewer is light
+- Main buttons are gold with dark text instead of black
+- Home hero uses the bright salon interior photo with a lighter tint
+- Staff dashboard sidebar and login are light
+- Note: the project sits on an iCloud-synced Desktop, which creates "file 2" copies inside `.next/` during builds. Harmless (`.next` is not in git); delete `.next` if a build complains

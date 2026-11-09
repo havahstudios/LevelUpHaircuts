@@ -33,7 +33,7 @@ export default function About() {
           <div className="mt-10 flex flex-wrap items-center gap-8">
             <Link
               href="/about"
-              className="group inline-flex items-center gap-3 rounded-[4px] bg-ink px-7 py-4 text-[14px] font-bold text-white"
+              className="group inline-flex items-center gap-3 rounded-[4px] bg-gold px-7 py-4 text-[14px] font-bold text-ink"
             >
               <SwitchText>Our story</SwitchText>
             </Link>

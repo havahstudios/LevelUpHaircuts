@@ -19,17 +19,17 @@ export default async function LoginPage() {
   }
 
   return (
-    <main className="grid min-h-svh place-items-center bg-ink px-4">
+    <main className="grid min-h-svh place-items-center bg-cream px-4">
       <div className="w-full max-w-[380px] text-center">
-        <Logo light />
-        <p className="mt-10 text-[13px] font-bold uppercase tracking-[0.25em] text-gold">Staff login</p>
+        <Logo />
+        <p className="mt-10 text-[13px] font-bold uppercase tracking-[0.25em] text-gold-deep">Staff login</p>
         {!configured ? (
-          <p className="mt-6 text-white/70">The booking database is not connected yet.</p>
+          <p className="mt-6">The booking database is not connected yet.</p>
         ) : notStaffEmail ? (
-          <div className="mt-6 text-white/80">
+          <div className="mt-6">
             <p>{notStaffEmail} is not on the staff list. Ask the owner to add you.</p>
             <form action={signOut} className="mt-6">
-              <button type="submit" className="rounded-[4px] border border-gold px-6 py-3 text-[14px] font-bold text-gold">
+              <button type="submit" className="rounded-[4px] border border-ink px-6 py-3 text-[14px] font-bold text-ink">
                 Sign out
               </button>
             </form>

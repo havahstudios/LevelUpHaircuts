@@ -32,8 +32,8 @@ export default async function ServicesPage() {
       <PageBanner
         title="Services"
         kicker="Cuts, colour, styling and perms"
-        image="/images/ai/service-haircut.webp"
-        alt="Stylist giving a woman a precise shoulder-length cut"
+        image="/images/ai/salon-tools.webp"
+        alt="Shears, comb and brush on a walnut counter"
       />
       <ServiceRows />
       <div className="bg-paper">

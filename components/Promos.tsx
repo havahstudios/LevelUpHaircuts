@@ -33,8 +33,8 @@ export default function Promos() {
                 sizes="(min-width: 768px) 50vw, 100vw"
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-ink/50" />
-              <span className="absolute right-6 top-6 rounded-[3px] bg-ink/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-white">
+              <div className="absolute inset-x-0 bottom-0 h-2/3 bg-[linear-gradient(to_top,rgba(20,18,16,0.6),transparent)]" />
+              <span className="absolute right-6 top-6 rounded-[3px] bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-ink">
                 {p.tag}
               </span>
               <div className="absolute inset-x-0 bottom-0 p-8 text-center md:p-12">

@@ -20,13 +20,13 @@ export default function AdminNav({ name, isOwner }: { name: string; isOwner: boo
   const [open, setOpen] = useState(false);
 
   return (
-    <aside className="bg-ink text-white/80 lg:sticky lg:top-0 lg:flex lg:h-svh lg:flex-col">
+    <aside className="border-b border-line bg-white text-muted lg:sticky lg:top-0 lg:flex lg:h-svh lg:flex-col lg:border-b-0 lg:border-r">
       <div className="flex items-center justify-between px-5 py-4 lg:block lg:px-6 lg:py-8">
         <Link href="/admin" aria-label="Schedule">
-          <Logo light />
+          <Logo />
         </Link>
         <button type="button" onClick={() => setOpen(!open)} className="grid h-11 w-11 place-items-center lg:hidden" aria-label="Menu" aria-expanded={open}>
-          <span className="block h-px w-6 bg-white shadow-[0_-7px_0_white,0_7px_0_white]" />
+          <span className="block h-px w-6 bg-ink shadow-[0_-7px_0_#141210,0_7px_0_#141210]" />
         </button>
       </div>
       <nav className={`${open ? "block" : "hidden"} px-3 pb-4 lg:block lg:flex-1`} aria-label="Dashboard">
@@ -37,22 +37,22 @@ export default function AdminNav({ name, isOwner }: { name: string; isOwner: boo
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className={`block rounded-[4px] px-3 py-2.5 text-[15px] ${active ? "bg-white/10 font-bold text-gold" : "hover:text-white"}`}
+              className={`block rounded-[4px] px-3 py-2.5 text-[15px] ${active ? "bg-cream font-bold text-ink" : "hover:text-ink"}`}
             >
               {l.label}
             </Link>
           );
         })}
       </nav>
-      <div className={`${open ? "block" : "hidden"} border-t border-white/10 px-6 py-5 text-[13px] lg:block`}>
-        <p className="truncate text-white">{name}</p>
-        <p className="text-white/50">{isOwner ? "Owner" : "Staff"}</p>
+      <div className={`${open ? "block" : "hidden"} border-t border-line px-6 py-5 text-[13px] lg:block`}>
+        <p className="truncate font-bold text-ink">{name}</p>
+        <p className="text-muted">{isOwner ? "Owner" : "Staff"}</p>
         <div className="mt-3 flex gap-4">
-          <Link href="/" className="hover:text-gold">
+          <Link href="/" className="hover:text-gold-deep">
             View site
           </Link>
           <form action={signOut}>
-            <button type="submit" className="hover:text-gold">
+            <button type="submit" className="hover:text-gold-deep">
               Sign out
             </button>
           </form>
