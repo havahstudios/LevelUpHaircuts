@@ -1,9 +1,12 @@
 import SectionHeading from "@/components/SectionHeading";
-import { priceGroups } from "@/lib/content";
+import { priceGroups as fallbackGroups } from "@/lib/content";
+
+export type PriceGroup = { label: string; items: { name: string; note: string; price: string }[] };
 
 // Two-column price menu. The first row of each column sits on its own,
 // the rest sit inside a labelled card, like the reference. Rows nudge right on hover.
-export default function Pricing() {
+// Prices come from the booking database when it is connected.
+export default function Pricing({ groups = fallbackGroups }: { groups?: PriceGroup[] }) {
   return (
     <section id="pricing" className="bg-paper py-24 md:py-32">
       <div className="mx-auto max-w-[1200px] px-4 md:px-8">
@@ -15,7 +18,7 @@ export default function Pricing() {
         </div>
 
         <div className="mt-16 grid gap-8 lg:grid-cols-2">
-          {priceGroups.map((group) => {
+          {groups.map((group) => {
             const [first, ...rest] = group.items;
             return (
               <div key={group.label}>

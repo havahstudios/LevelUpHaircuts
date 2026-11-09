@@ -16,7 +16,7 @@ export default function Footer() {
             Ready to <span className="text-gold">level up</span>?
           </p>
           <Link
-            href="/contact"
+            href="/book"
             className="group mt-10 inline-flex rounded-[4px] bg-gold px-8 py-4 text-[14px] font-bold text-ink"
           >
             <SwitchText>Book an appointment</SwitchText>

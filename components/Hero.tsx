@@ -32,7 +32,7 @@ export default function Hero() {
           </span>
         </h1>
         <Link
-          href="/contact"
+          href="/book"
           className="group mt-10 inline-flex items-center gap-3 rounded-[4px] bg-white px-7 py-3.5 text-[15px] font-bold text-ink"
         >
           <CalendarIcon className="h-[18px] w-[18px]" />

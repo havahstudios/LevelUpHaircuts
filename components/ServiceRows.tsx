@@ -42,7 +42,7 @@ export default function ServiceRows() {
                   <h2 className="text-[38px] md:text-[48px]">{s.title}</h2>
                 </div>
                 <p className="mt-6 max-w-[460px]">{details[s.title]}</p>
-                <Link href="/contact" className="group mt-8 inline-flex items-center gap-2 text-[15px] font-bold text-ink">
+                <Link href="/book" className="group mt-8 inline-flex items-center gap-2 text-[15px] font-bold text-ink">
                   Book {s.title.toLowerCase()}
                   <ArrowIcon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                 </Link>

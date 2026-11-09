@@ -13,7 +13,7 @@ export default function Feature() {
             <p className="text-[13px] font-bold uppercase tracking-[0.32em] text-gold">Thursday and Friday</p>
             <p className="mt-5 font-display text-[44px] leading-[1] tracking-[-0.04em] text-white md:text-[72px]">Open until 7pm</p>
             <Link
-              href="/contact"
+              href="/book"
               className="mt-10 grid h-[110px] w-[110px] place-items-center rounded-full border border-white/60 text-[12px] font-bold uppercase tracking-[0.2em] text-white transition-colors duration-300 hover:border-gold hover:bg-gold hover:text-ink"
             >
               Book

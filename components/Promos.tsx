@@ -25,7 +25,7 @@ export default function Promos() {
       <div className="mx-auto grid max-w-[1200px] gap-8 px-4 md:grid-cols-2 md:px-8">
         {promos.map((p) => (
           <div key={p.title}>
-            <Link href="/contact" className="group relative block h-[380px] overflow-hidden rounded-[6px] md:h-[440px]">
+            <Link href="/book" className="group relative block h-[380px] overflow-hidden rounded-[6px] md:h-[440px]">
               <Image
                 src={p.image}
                 alt={p.alt}

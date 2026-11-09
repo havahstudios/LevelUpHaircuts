@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
 import { Limelight, Sen } from "next/font/google";
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
-import { businessData } from "@/lib/business-data";
 import { site } from "@/lib/site";
 import "./globals.css";
 
@@ -42,10 +39,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${limelight.variable} ${sen.variable}`}>
       <body>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(businessData) }} />
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        {children}
       </body>
     </html>
   );

@@ -42,3 +42,4 @@ next-env.d.ts
 
 # local photo archive (large, not used by the site)
 /seo/photo-pool/
+!.env.example

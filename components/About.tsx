@@ -37,7 +37,7 @@ export default function About() {
             >
               <SwitchText>Our story</SwitchText>
             </Link>
-            <Link href="/contact" className="group inline-flex items-center gap-2 text-[15px] font-bold text-ink">
+            <Link href="/book" className="group inline-flex items-center gap-2 text-[15px] font-bold text-ink">
               Book a visit
               <ArrowIcon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>

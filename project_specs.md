@@ -167,7 +167,7 @@ The one long homepage is split into five pages. The header and footer link betwe
 
 ---
 
-# Phase 3: Online booking + salon schedule (waiting for approval)
+# Phase 3: Online booking + salon schedule (approved Sunday 8 November 2026, built, waiting for Supabase keys)
 
 ## What it does and who uses it
 - **Customers** book a real appointment online: pick a service, a stylist (or "Any stylist"), and an open time. It is booked instantly.
@@ -248,3 +248,15 @@ The one long homepage is split into five pages. The header and footer link betwe
 - Staff can change services, prices, stylists and hours, and the public site and available times update straight away
 - Logged-out visitors cannot open any `/admin` page or read bookings (tested)
 - `npm run build` passes, no console errors, happy and error paths tested in the browser, deployed to the preview link
+
+## Phase 3 progress
+
+- Sunday 8 November 2026: **Booking system built**, not yet connected to a live database.
+  - Database: `supabase/migrations/0001_booking.sql` (tables, Row Level Security, no-double-booking rule, starting data from Yelp). Tested in an in-memory Postgres: 13 of 13 checks pass, including visitors seeing no bookings or clients and overlapping bookings being refused
+  - Free-time logic in `lib/booking/availability.ts`, tested with 22 checks including daylight-saving days, stylist hours, lunch blocks and minimum notice
+  - Public: `/book` (4 steps), `/book/manage/[code]` (view or cancel), APIs `/api/availability`, `/api/bookings`, `/api/bookings/cancel`
+  - Staff: `/admin/login`, `/admin` (day and week schedule, add / edit / move / cancel / complete / no-show, block time), `/admin/clients`, `/admin/services`, `/admin/stylists`, `/admin/hours`, `/admin/team`. `proxy.ts` guards `/admin`
+  - Every "Book" button now goes to `/book`. The old request form and `/api/appointment` were removed. Services page prices come from the database (fall back to "to confirm")
+  - `cacheComponents` switched off in `next.config.ts` (staff pages read the login on every request; same as the MSJ site)
+  - Starting service lengths (45 to 120 minutes) and stylists (Norma, Sara, Isabella) are placeholders for the salon to correct in the dashboard
+  - **Not yet tested end to end:** needs the Supabase project and keys. Build, lint and type check pass; pages show "not set up yet" messages until then

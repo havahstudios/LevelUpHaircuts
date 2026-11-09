@@ -31,7 +31,7 @@ export default function Header() {
     <>
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-colors duration-500 ${
-          solid ? "bg-ink/95 shadow-[0_10px_30px_rgba(0,0,0,0.15)] backdrop-blur" : "bg-transparent"
+          solid || pathname.startsWith("/book/manage") ? "bg-ink/95 shadow-[0_10px_30px_rgba(0,0,0,0.15)] backdrop-blur" : "bg-transparent"
         }`}
       >
         <div className={`mx-auto grid max-w-[1320px] grid-cols-[1fr_auto_1fr] items-center px-4 h-[84px] text-white md:px-8`}>
@@ -66,7 +66,7 @@ export default function Header() {
               ))}
             </nav>
             <Link
-              href="/contact"
+              href="/book"
               className="hidden rounded-[4px] border border-gold px-5 py-2.5 text-[13px] font-bold uppercase tracking-[0.15em] text-gold xl:inline-block group"
             >
               <SwitchText>Book now</SwitchText>
@@ -92,7 +92,7 @@ export default function Header() {
               </button>
             </div>
             <nav className="mt-14 flex flex-col gap-2" aria-label="Mobile">
-              {[...navLinks, { href: "/contact", label: "Book a visit" }].map((l) => (
+              {[...navLinks, { href: "/book", label: "Book a visit" }].map((l) => (
                 <MotionLink
                   key={l.label}
                   href={l.href}
