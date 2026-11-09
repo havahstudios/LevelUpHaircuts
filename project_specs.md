@@ -157,3 +157,10 @@ The one long homepage is split into five pages. The header and footer link betwe
 - Build and lint pass; checked in the browser on desktop and phone.
 
 - Sunday 8 November 2026: **Stats row changed** (owner request). Days open, Yelp review count, hours and stylist count replaced with template-style stats: years of experience, haircuts per week, colour services per week, happy clients. Each shows "to confirm" until the salon gives real numbers, then rolls in like the template.
+
+## Preview link and GitHub (Sunday 8 November 2026)
+
+- **Live preview:** https://level-up-hair-salon.vercel.app (Vercel project `level-up-hair-salon`, account havahstudios-3680). For showing the salon, not for customers yet.
+- **No-index switch:** `indexable: false` in `lib/site.ts` makes robots.txt block everything and adds a noindex tag, so Google stays away until launch. Flip it at launch.
+- **Booking form warning:** submissions only land in Vercel's server logs (Option A). The salon does not receive them. Needs email or Supabase before real customers use it.
+- **Git:** repository started on branch `main`, first commit made. `seo/photo-pool/` (19MB archive) is kept out of git. GitHub repo still to be published from GitHub Desktop (no GitHub CLI on this Mac).
