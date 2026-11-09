@@ -77,7 +77,7 @@ export async function sendBookingEmails(kind: EmailKind, b: EmailBooking) {
 
   // Test mode: everything goes to one inbox, labelled with who it was for.
   const outgoing = redirect
-    ? messages.map((m) => ({ ...m, to: redirect, subject: m.to === salon ? m.subject : `[Customer email for ${m.to}] ${m.subject}` }))
+    ? messages.map((m) => ({ ...m, to: redirect, subject: m.to === salon ? m.subject : `[Customer copy] ${m.subject}` }))
     : messages;
 
   if (!useGmail && !key) {

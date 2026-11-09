@@ -108,3 +108,11 @@ export function addMonths(day: string, n: number, extraDays = 0): string {
   const [y, m, d] = day.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1 + n, d + extraDays)).toISOString().slice(0, 10);
 }
+
+/** "Tue, Nov 24 · 10:15am", short enough for an email subject line. */
+export function formatShortWhen(iso: string): string {
+  const date = new Date(iso);
+  const [y, m, d] = laDay(date).split("-").map(Number);
+  const dayPart = new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, d)));
+  return `${dayPart} · ${formatMinutes(laMinutes(date))}`;
+}

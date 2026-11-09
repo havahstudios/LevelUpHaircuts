@@ -2,7 +2,7 @@
 // be previewed. Built with tables and inline styles so they render the same in
 // Gmail, Apple Mail and Outlook.
 
-import { formatWhen } from "@/lib/booking/time";
+import { formatShortWhen, formatWhen } from "@/lib/booking/time";
 import { fullAddress, site } from "@/lib/site";
 
 export type TemplateBooking = {
@@ -119,7 +119,7 @@ export function salonRequestEmail(b: TemplateBooking, respondUrl: string): Email
   const free = b.stillFree !== false;
   const availability = free ? `${b.stylistName} is free` : "Clashes with blocked time";
   return {
-    subject: `New booking request: ${b.client.name}, ${when}`,
+    subject: `New booking request · ${b.client.name} · ${formatShortWhen(b.startsAt)}`,
     text: `New booking request\n\n${b.client.name}\n${b.client.phone}\n${b.client.email}\n\n${b.serviceName} with ${b.stylistName}\n${when}\nStatus: Waiting for you\nAvailability: ${availability}\n\nAccept or decline: ${respondUrl}`,
     html: shell({
       preheader: `${b.client.name} wants ${b.serviceName} on ${when}. Tap to accept or decline.`,
@@ -147,7 +147,7 @@ export function salonRequestEmail(b: TemplateBooking, respondUrl: string): Email
 export function salonCancelledEmail(b: TemplateBooking, scheduleUrl: string): Email {
   const when = formatWhen(b.startsAt);
   return {
-    subject: `Cancelled: ${b.client.name}, ${when}`,
+    subject: `Booking cancelled · ${b.client.name} · ${formatShortWhen(b.startsAt)}`,
     text: `${b.client.name} cancelled ${b.serviceName} with ${b.stylistName} on ${when}. The time is free again.`,
     html: shell({
       preheader: `${b.client.name} cancelled. The time is free again.`,
@@ -165,7 +165,7 @@ export function salonCancelledEmail(b: TemplateBooking, scheduleUrl: string): Em
 export function customerRequestEmail(b: TemplateBooking, manageUrl: string): Email {
   const when = formatWhen(b.startsAt);
   return {
-    subject: `We got your request: ${b.serviceName}, ${when}`,
+    subject: `Your booking request is in · Level-Up Hair Salon`,
     text: `Hi ${b.client.name}, we got your request for ${b.serviceName} with ${b.stylistName} on ${when}. We'll email you as soon as the salon confirms.\n\nView your booking: ${manageUrl}`,
     html: shell({
       preheader: "Your time is held while the salon confirms.",
@@ -182,7 +182,7 @@ export function customerRequestEmail(b: TemplateBooking, manageUrl: string): Ema
 export function customerBookedEmail(b: TemplateBooking, manageUrl: string): Email {
   const when = formatWhen(b.startsAt);
   return {
-    subject: `You're booked: ${b.serviceName}, ${when}`,
+    subject: `You're booked at Level-Up · ${formatShortWhen(b.startsAt)}`,
     text: `Hi ${b.client.name}, you're booked for ${b.serviceName} with ${b.stylistName} on ${when} at ${fullAddress}.\n\nNeed to cancel? ${manageUrl}`,
     html: shell({
       preheader: `See you ${when}.`,
@@ -203,7 +203,7 @@ export function customerBookedEmail(b: TemplateBooking, manageUrl: string): Emai
 export function customerDeclinedEmail(b: TemplateBooking, bookUrl: string): Email {
   const when = formatWhen(b.startsAt);
   return {
-    subject: `Please pick another time`,
+    subject: `That time isn't available · Level-Up Hair Salon`,
     text: `Hi ${b.client.name}, sorry, the salon couldn't fit you in for ${b.serviceName} on ${when}. Please pick another time: ${bookUrl}`,
     html: shell({
       preheader: "Sorry, that time didn't work. Please choose another.",
@@ -221,7 +221,7 @@ export function customerDeclinedEmail(b: TemplateBooking, bookUrl: string): Emai
 export function customerCancelledEmail(b: TemplateBooking, bookUrl: string): Email {
   const when = formatWhen(b.startsAt);
   return {
-    subject: `Cancelled: ${b.serviceName}, ${when}`,
+    subject: `Your appointment is cancelled · Level-Up Hair Salon`,
     text: `Hi ${b.client.name}, your ${b.serviceName} on ${when} is cancelled. Book again any time: ${bookUrl}`,
     html: shell({
       preheader: "Your appointment has been cancelled.",
