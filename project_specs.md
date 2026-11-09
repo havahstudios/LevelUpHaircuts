@@ -331,4 +331,4 @@ This replaces "instant booking" (Phase 3 decision) for **online** bookings only.
 ## Emails through Gmail, test mode (Sunday 8 November 2026, owner request)
 - Resend put on hold. Emails now send from the owner's Gmail (`GMAIL_USER` + `GMAIL_APP_PASSWORD`, a Google app password). Resend still works as a fallback if a key is added later
 - Test mode on: `EMAIL_REDIRECT_TO=havahstudios@gmail.com` sends every email (salon Accept / Decline and all customer emails) to that inbox, customer ones labelled "[Customer email for ...]". Remove it to send customer emails to customers
-- Dry run passed: the right emails are built and addressed correctly. Waiting for the Gmail app password to actually send
+- Owner chose Resend after all (simplest while everything goes to their own inbox). `RESEND_API_KEY` added locally and on Vercel. Sending tested locally and live: salon email and labelled customer copy both delivered via Resend. Test bookings removed
