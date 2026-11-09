@@ -337,3 +337,7 @@ This replaces "instant booking" (Phase 3 decision) for **online** bookings only.
 - New guards (`findClash` in `lib/booking/bookings.ts`): a client cannot hold two overlapping bookings (stops a double-click with "Any stylist" booking two stylists); staff cannot add or move a booking into blocked time; a request cannot be accepted if its time now clashes with blocked time. The database still refuses two overlapping bookings for one stylist
 - 18 double-booking tests run against the live database (online vs online, partial overlap, back-to-back, staff vs pending, same client, simultaneous double-clicks, simultaneous staff adds, moving onto a taken time, lunch blocks, accepting into a block, answering twice, cancel then rebook, restoring a cancelled booking onto a taken slot). All passed; test data removed
 - Emails redesigned (`lib/booking/email-templates.ts`): Level-Up wordmark, white card on cream, status tag, details panel, availability dot, full-width rounded gold buttons, footer with address and links. Checked at phone and desktop width. Addresses and emails wrapped in styled links so Gmail and Apple Mail do not turn them blue
+
+## Favicon and clean-up (Sunday 8 November 2026, owner request)
+- Favicon replaced (was the Next.js default): black rounded square with "L-U" in serif, gold dash, matching the wordmark. `app/favicon.ico` (16 to 64px), `app/icon.png` (512px), `app/apple-icon.png` (iPhone home screen)
+- Old cancelled test booking (Hair styling, 11 November) deleted. The owner's newer Cut and colour test on 12 November kept
