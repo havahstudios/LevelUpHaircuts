@@ -102,3 +102,9 @@ export function isDayString(v: unknown): v is string {
 export function isUpcoming(iso: string): boolean {
   return Date.parse(iso) > Date.now();
 }
+
+/** "2026-11-01" + 1 month -> "2026-12-01". extraDays shifts the result (-1 = last day of the previous month). */
+export function addMonths(day: string, n: number, extraDays = 0): string {
+  const [y, m, d] = day.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1 + n, d + extraDays)).toISOString().slice(0, 10);
+}

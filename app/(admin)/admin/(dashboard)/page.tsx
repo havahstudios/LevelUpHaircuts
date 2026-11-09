@@ -1,23 +1,32 @@
 import Link from "next/link";
-import { addDays, formatDay, isDayString, laDay } from "@/lib/booking/time";
+import { addDays, addMonths, formatDay, isDayString, laDay } from "@/lib/booking/time";
 import { loadSchedule, weekStart } from "@/lib/booking/staff";
 import { getSupabaseAuth } from "@/lib/supabase/auth";
 import ScheduleBoard from "./ScheduleBoard";
 
-// The schedule: one day (a column per stylist) or one week.
+// The schedule: one day (a column per stylist), one week, or a whole month.
 export default async function SchedulePage({ searchParams }: PageProps<"/admin">) {
   const params = await searchParams;
   const today = laDay(new Date());
   const day = isDayString(params.day) ? params.day : today;
-  const view = params.view === "week" ? "week" : "day";
+  const view = params.view === "week" ? "week" : params.view === "month" ? "month" : "day";
 
-  const from = view === "week" ? weekStart(day) : day;
-  const to = addDays(from, view === "week" ? 7 : 1);
+  // Month view covers whole weeks, from the Sunday before the 1st to the Saturday after the last day.
+  const monthFirst = `${day.slice(0, 7)}-01`;
+  const monthLast = addMonths(monthFirst, 1, -1);
+  const from = view === "week" ? weekStart(day) : view === "month" ? weekStart(monthFirst) : day;
+  const to = view === "week" ? addDays(from, 7) : view === "month" ? addDays(weekStart(monthLast), 7) : addDays(from, 1);
   const schedule = await loadSchedule(await getSupabaseAuth(), from, to);
 
-  const step = view === "week" ? 7 : 1;
+  const prev = view === "month" ? addMonths(monthFirst, -1) : addDays(day, view === "week" ? -7 : -1);
+  const next = view === "month" ? addMonths(monthFirst, 1) : addDays(day, view === "week" ? 7 : 1);
   const link = (d: string, v = view) => `/admin?day=${d}&view=${v}`;
-  const title = view === "week" ? `Week of ${formatDay(from)}` : formatDay(day);
+  const title =
+    view === "week"
+      ? `Week of ${formatDay(from)}`
+      : view === "month"
+        ? new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${monthFirst}T12:00:00Z`))
+        : formatDay(day);
 
   return (
     <div>
@@ -28,13 +37,13 @@ export default async function SchedulePage({ searchParams }: PageProps<"/admin">
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex overflow-hidden rounded-[4px] border border-line bg-white">
-            <Link href={link(addDays(day, -step))} className="grid h-11 w-11 place-items-center text-ink hover:bg-cream" aria-label="Previous">
+            <Link href={link(prev)} className="grid h-11 w-11 place-items-center text-ink hover:bg-cream" aria-label="Previous">
               &#8249;
             </Link>
             <Link href={link(today)} className="grid h-11 place-items-center border-x border-line px-4 text-[14px] font-bold text-ink hover:bg-cream">
               Today
             </Link>
-            <Link href={link(addDays(day, step))} className="grid h-11 w-11 place-items-center text-ink hover:bg-cream" aria-label="Next">
+            <Link href={link(next)} className="grid h-11 w-11 place-items-center text-ink hover:bg-cream" aria-label="Next">
               &#8250;
             </Link>
           </div>
@@ -44,6 +53,9 @@ export default async function SchedulePage({ searchParams }: PageProps<"/admin">
             </Link>
             <Link href={link(day, "week")} className={`grid h-11 place-items-center px-4 ${view === "week" ? "bg-ink text-white" : "text-ink hover:bg-cream"}`}>
               Week
+            </Link>
+            <Link href={link(day, "month")} className={`grid h-11 place-items-center px-4 ${view === "month" ? "bg-ink text-white" : "text-ink hover:bg-cream"}`}>
+              Month
             </Link>
           </div>
           <form action="/admin" className="flex">
@@ -56,7 +68,7 @@ export default async function SchedulePage({ searchParams }: PageProps<"/admin">
         </div>
       </div>
 
-      <ScheduleBoard schedule={schedule} day={day} view={view} />
+      <ScheduleBoard schedule={schedule} day={day} view={view} month={day.slice(0, 7)} />
     </div>
   );
 }

@@ -321,3 +321,9 @@ This replaces "instant booking" (Phase 3 decision) for **online** bookings only.
 - Sunday 8 November 2026: migration 0002 run in Supabase. Tested locally against the real database: online booking saved as Pending and holds the time; opening the email link does not accept by itself; Accept sets Booked; Decline sets Declined and frees the time; links cannot be reused; bad links rejected; customer page shows the status. Pushed live
 - Still to test with the owner signed in: the dashboard's Waiting for approval list and Accept / Decline in a booking
 - Emails: waiting for the Resend API key. Until then the Accept / Decline link is written to the server log
+
+## Clean-up, month view, footer links (Sunday 8 November 2026, owner request)
+- All 9 test bookings and their 9 test client records deleted from Supabase (services, stylists, hours and the owner login kept)
+- Staff schedule has a **Month** view next to Day and Week: whole weeks of the month, up to 3 appointments per day with "+ N more", a pending count per day, click a day to open it, click an appointment to open it
+- Footer: **Staff login** link to `/admin` and **Website by Havah Studios** credit
+- Salon booking alerts go to havahstudios@gmail.com (set in Hours & settings). Sending needs the Resend API key

@@ -21,7 +21,7 @@ const statusStyle: Record<string, string> = {
   cancelled: "bg-white/70 text-muted line-through ring-1 ring-line",
 };
 
-export default function ScheduleBoard({ schedule, day, view }: { schedule: Schedule; day: string; view: "day" | "week" }) {
+export default function ScheduleBoard({ schedule, day, view, month }: { schedule: Schedule; day: string; view: "day" | "week" | "month"; month: string }) {
   const [modal, setModal] = useState<ModalState | null>(null);
   const [offModal, setOffModal] = useState<{ stylistId: string; day: string; from: string } | TimeOff | null>(null);
   const [showCancelled, setShowCancelled] = useState(false);
@@ -71,8 +71,10 @@ export default function ScheduleBoard({ schedule, day, view }: { schedule: Sched
           onBooking={(b) => setModal({ mode: "edit", booking: b })}
           onTimeOff={(t) => setOffModal(t)}
         />
-      ) : (
+      ) : view === "week" ? (
         <WeekGrid schedule={schedule} bookings={visible} colorOf={colorOf} onBooking={(b) => setModal({ mode: "edit", booking: b })} />
+      ) : (
+        <MonthGrid schedule={schedule} month={month} bookings={visible} colorOf={colorOf} onBooking={(b) => setModal({ mode: "edit", booking: b })} />
       )}
 
       <div className="mt-4 flex flex-wrap gap-4 text-[13px]">
@@ -284,6 +286,81 @@ function WeekGrid({
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+function MonthGrid({
+  schedule,
+  month,
+  bookings,
+  colorOf,
+  onBooking,
+}: {
+  schedule: Schedule;
+  month: string; // "YYYY-MM"
+  bookings: ScheduleBooking[];
+  colorOf: (id: string) => string;
+  onBooking: (b: ScheduleBooking) => void;
+}) {
+  const today = laDay(new Date());
+  const weeks = Math.round((Date.parse(`${schedule.to}T00:00:00Z`) - Date.parse(`${schedule.from}T00:00:00Z`)) / (7 * 86400000));
+  const days = Array.from({ length: weeks * 7 }, (_, i) => addDays(schedule.from, i));
+  const MAX = 3; // bookings shown per day before "+ more"
+
+  return (
+    <div className="overflow-x-auto rounded-[6px] border border-line bg-white">
+      <div className="min-w-[860px]">
+        <div className="grid grid-cols-7 border-b border-line text-[12px] font-bold uppercase tracking-[0.15em] text-muted">
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+            <div key={d} className="px-3 py-2">
+              {d}
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 divide-x divide-y divide-line">
+          {days.map((d) => {
+            const inMonth = d.startsWith(month);
+            const list = bookings.filter((b) => laDay(new Date(b.starts_at)) === d);
+            const closed = schedule.salonHours.find((h) => h.weekday === weekdayOf(d))?.closed || schedule.closedDates.includes(d);
+            const pendingCount = list.filter((b) => b.status === "pending").length;
+            return (
+              <div key={d} className={`min-h-[128px] p-2 ${!inMonth ? "bg-[#faf7f1] opacity-60" : closed ? "bg-[#f7f3eb]" : ""}`}>
+                <div className="flex items-center justify-between">
+                  <Link
+                    href={`/admin?day=${d}&view=day`}
+                    className={`grid h-7 min-w-7 place-items-center rounded-full px-1.5 text-[13px] font-bold ${d === today ? "bg-gold text-ink" : "text-ink hover:bg-cream"}`}
+                    aria-label={`Open ${d}`}
+                  >
+                    {Number(d.slice(8))}
+                  </Link>
+                  {pendingCount > 0 && <span className="rounded-full bg-[#fbf4e2] px-2 text-[11px] font-bold text-gold-deep outline-dashed outline-1 outline-gold">{pendingCount} pending</span>}
+                  {closed && list.length === 0 && <span className="text-[11px] text-muted">Closed</span>}
+                </div>
+                <div className="mt-1.5 space-y-1">
+                  {list.slice(0, MAX).map((b) => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      onClick={() => onBooking(b)}
+                      className={`block w-full truncate rounded-[3px] border-l-[3px] px-1.5 py-0.5 text-left text-[11px] leading-snug ${statusStyle[b.status]}`}
+                      style={{ borderLeftColor: colorOf(b.stylist_id) }}
+                      title={`${b.client.name}, ${b.service.name}`}
+                    >
+                      <span className="font-bold">{formatMinutes(laMinutes(new Date(b.starts_at)))}</span> {b.client.name}
+                    </button>
+                  ))}
+                  {list.length > MAX && (
+                    <Link href={`/admin?day=${d}&view=day`} className="block px-1.5 text-[11px] font-bold text-gold-deep hover:underline">
+                      + {list.length - MAX} more
+                    </Link>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
