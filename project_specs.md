@@ -164,3 +164,87 @@ The one long homepage is split into five pages. The header and footer link betwe
 - **No-index switch:** `indexable: false` in `lib/site.ts` makes robots.txt block everything and adds a noindex tag, so Google stays away until launch. Flip it at launch.
 - **Booking form warning:** submissions only land in Vercel's server logs (Option A). The salon does not receive them. Needs email or Supabase before real customers use it.
 - **Git:** repository started on branch `main`, first commit made. `seo/photo-pool/` (19MB archive) is kept out of git. Pushed to https://github.com/havahstudios/LevelUpHaircuts (branch `main`). Vercel is connected to it: every push to `main` deploys the live preview automatically.
+
+---
+
+# Phase 3: Online booking + salon schedule (waiting for approval)
+
+## What it does and who uses it
+- **Customers** book a real appointment online: pick a service, a stylist (or "Any stylist"), and an open time. It is booked instantly.
+- **Salon staff** log in to a private dashboard to see the schedule, add phone-in and walk-in bookings by hand, move or cancel bookings, block time off, and update services, prices, stylists and hours themselves. No code needed to change any of it.
+
+## Decisions (owner, Sunday 8 November 2026)
+- Instant booking (no approval step). Customers only ever see truly free times
+- Customers choose a stylist or "Any stylist" (books whoever is free)
+- Emails to the salon (new / changed / cancelled booking) and to the customer (confirmation with a cancel link)
+- New Supabase project just for Level-Up
+
+## Public pages
+1. **`/book`**, a 4-step booking page in the site's design:
+   1. Choose a service (name, length, price, all from the database)
+   2. Choose a stylist, or "Any stylist"
+   3. Choose a day (calendar, next 60 days) and an open time. Times come from salon hours, the stylist's working hours, their existing bookings, time off and the service length
+   4. Your details: name, phone, email, optional note. Then **Confirm booking**
+   - Success screen with the date, time, stylist and a booking reference
+   - If someone else grabs the same time a second earlier, the customer sees "That time was just taken, please pick another" (the database refuses double bookings)
+2. **`/book/manage/[code]`**: the link in the customer's email. Shows their booking and lets them cancel it
+3. "Book" buttons across the site point to `/book`. The old request form on Contact & booking is replaced by the real booking flow (the page keeps the map, hours and FAQ)
+4. Prices on the Services page come from the database, so when the salon updates a price in the dashboard, the website updates too (this also clears the "to confirm" prices)
+
+## Staff dashboard (login required, `/admin`)
+- **Login**: email and password (Supabase Auth). No public sign-up. The owner's account is created first; the owner can add staff accounts
+- **Schedule** (main screen)
+  - Day view with one column per stylist, 15-minute rows, today by default. Arrows to change day, plus a week view
+  - Click an empty time to **add a booking by hand**: client name and phone (email optional), service, stylist, time, source (phone or walk-in), note. Existing clients are suggested as you type
+  - Click a booking to **edit, move, cancel**, or mark **completed** or **no-show**
+  - **Block time**: lunch, a day off or holidays, for one stylist or the whole salon
+  - Works on an iPad or phone at the front desk
+- **Services**: add, edit, hide services. Name, category, length in minutes, price, description, order
+- **Stylists**: add, edit, hide stylists, set each one's working days and hours, and which services they offer
+- **Hours**: salon opening hours per day, closed dates, how far ahead people can book (default 60 days), minimum notice (default 2 hours)
+- **Clients**: simple list with visit history, phone and email, searchable
+
+## Tech stack
+- Next.js (App Router) + TypeScript + Tailwind, same as the site
+- **Supabase**: Postgres database, Auth for staff logins, Row Level Security on every table
+- **Resend** for emails
+- Vercel hosting (already connected to GitHub)
+- All times stored in UTC and shown in Los Angeles time
+
+## Data models (Supabase, all with RLS on)
+- **stylists**: name, active, display order
+- **services**: name, category, description, duration (minutes), price, active, display order
+- **stylist_services**: which stylist offers which service
+- **salon_hours**: per weekday: open, close, or closed
+- **stylist_hours**: per stylist per weekday: start, end (defaults to salon hours)
+- **time_off**: stylist (or whole salon), start, end, reason
+- **closed_dates**: holidays and other full-day closures
+- **clients**: name, phone, email, notes (matched by phone or email so repeat clients are not duplicated)
+- **bookings**: client, stylist, service, start, end, status (booked, cancelled, completed, no-show), source (online, phone, walk-in), note, private cancel code, created by
+  - A database rule makes two bookings for the same stylist at overlapping times impossible
+- **staff**: which logged-in users are staff, and whether each is owner or staff
+
+## Who can see what (security)
+- Visitors can read active services, stylists and hours only. They can never read bookings or clients
+- Online bookings go through an API route on the server, which re-checks the time is free before saving. The secret Supabase key stays on the server only
+- Staff (logged in and listed in `staff`) can read and change everything in the dashboard
+- Only the owner can add or remove staff accounts
+- Cancel links use a long random code, not the booking number
+
+## Third-party services
+- **Supabase** (free plan): database and staff logins
+- **Resend** (free plan, 3,000 emails a month). Emails to customers need a verified domain. Until the salon has its domain, only the salon's notification email can be sent, and customers see the on-screen confirmation
+- **Vercel**: hosting, plus the secret keys stored as environment variables
+
+## What I need from you (I will walk you through each)
+1. Create the Supabase project and send me its keys
+2. Create a Resend account and send me its API key
+3. From the salon: stylist names, working days and hours, each service's length and price, the email that should get booking notifications, and who needs a staff login
+
+## What "done" looks like
+- A customer can book on `/book` on phone and desktop, gets a confirmation screen (and email, once a domain is verified), and can cancel from the link
+- Double bookings are impossible, including two people clicking the same time at once
+- Staff can log in, see the day and week schedule per stylist, add a phone-in booking in under 30 seconds, and edit, move, cancel and block time
+- Staff can change services, prices, stylists and hours, and the public site and available times update straight away
+- Logged-out visitors cannot open any `/admin` page or read bookings (tested)
+- `npm run build` passes, no console errors, happy and error paths tested in the browser, deployed to the preview link
