@@ -275,7 +275,7 @@ The one long homepage is split into five pages. The header and footer link betwe
 
 ---
 
-# Phase 3b: Salon accepts or declines online bookings (approved Sunday 8 November 2026, built, waiting for migration 0002)
+# Phase 3b: Salon accepts or declines online bookings (approved Sunday 8 November 2026, built, migration 0002 run, live)
 
 Owner request: when a booking comes in, the salon gets an email with buttons to **accept or decline** it, and each booking shows its **status** and whether **the time is still available**.
 
@@ -316,3 +316,8 @@ This replaces "instant booking" (Phase 3 decision) for **online** bookings only.
 - A link cannot be used twice or after the booking changed
 - Pending bookings are clearly marked on the schedule with a waiting list
 - Tested end to end locally and on the live link
+
+## Phase 3b progress
+- Sunday 8 November 2026: migration 0002 run in Supabase. Tested locally against the real database: online booking saved as Pending and holds the time; opening the email link does not accept by itself; Accept sets Booked; Decline sets Declined and frees the time; links cannot be reused; bad links rejected; customer page shows the status. Pushed live
+- Still to test with the owner signed in: the dashboard's Waiting for approval list and Accept / Decline in a booking
+- Emails: waiting for the Resend API key. Until then the Accept / Decline link is written to the server log
