@@ -163,4 +163,4 @@ The one long homepage is split into five pages. The header and footer link betwe
 - **Live preview:** https://level-up-hair-salon.vercel.app (Vercel project `level-up-hair-salon`, account havahstudios-3680). For showing the salon, not for customers yet.
 - **No-index switch:** `indexable: false` in `lib/site.ts` makes robots.txt block everything and adds a noindex tag, so Google stays away until launch. Flip it at launch.
 - **Booking form warning:** submissions only land in Vercel's server logs (Option A). The salon does not receive them. Needs email or Supabase before real customers use it.
-- **Git:** repository started on branch `main`, first commit made. `seo/photo-pool/` (19MB archive) is kept out of git. Pushed to https://github.com/havahstudios/LevelUpHaircuts (branch `main`).
+- **Git:** repository started on branch `main`, first commit made. `seo/photo-pool/` (19MB archive) is kept out of git. Pushed to https://github.com/havahstudios/LevelUpHaircuts (branch `main`). Vercel is connected to it: every push to `main` deploys the live preview automatically.
