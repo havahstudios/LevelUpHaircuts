@@ -1,5 +1,6 @@
 import Link from "next/link";
 import SwitchText from "@/components/SwitchText";
+import HavahCredit from "@/components/HavahCredit";
 import Logo from "@/components/Logo";
 import SocialLinks from "@/components/SocialLinks";
 import { navLinks } from "@/lib/content";
@@ -48,14 +49,12 @@ export default function Footer() {
 
         <div className="mt-14 flex flex-col gap-3 border-t border-line pt-8 text-[13px] md:flex-row md:justify-between">
           <p>&copy; {site.name}. All rights reserved.</p>
-          <p className="flex flex-wrap gap-x-5 gap-y-1">
+          <p className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <span>Images are illustrative until our own photos are added.</span>
             <Link href="/admin" className="font-bold text-ink hover:text-gold-deep">
               Staff login
             </Link>
-            <span>
-              Website by <span className="font-bold text-ink">Havah Studios</span>
-            </span>
+            <HavahCredit />
           </p>
         </div>
       </div>

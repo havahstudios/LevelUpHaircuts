@@ -325,5 +325,5 @@ This replaces "instant booking" (Phase 3 decision) for **online** bookings only.
 ## Clean-up, month view, footer links (Sunday 8 November 2026, owner request)
 - All 9 test bookings and their 9 test client records deleted from Supabase (services, stylists, hours and the owner login kept)
 - Staff schedule has a **Month** view next to Day and Week: whole weeks of the month, up to 3 appointments per day with "+ N more", a pending count per day, click a day to open it, click an appointment to open it
-- Footer: **Staff login** link to `/admin` and **Website by Havah Studios** credit
+- Footer: **Staff login** link to `/admin` and the standard **Built by Havah Studios** pill (same as Benny's Grill), linking to havahstudios.live
 - Salon booking alerts go to havahstudios@gmail.com (set in Hours & settings). Sending needs the Resend API key
