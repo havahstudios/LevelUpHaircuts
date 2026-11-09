@@ -1,5 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isStillFree } from "@/lib/booking/bookings";
 import { addDays, isDayString, laToUtc } from "@/lib/booking/time";
 import type { BookingStatus, SalonHours, Service, Stylist, StylistHours, TimeOff } from "@/lib/booking/types";
 
@@ -29,6 +30,8 @@ export type Schedule = {
   closedDates: string[];
   bookings: ScheduleBooking[];
   timeOff: TimeOff[];
+  /** Every upcoming online booking still waiting for the salon, with a live availability check. */
+  pending: (ScheduleBooking & { stillFree: boolean })[];
 };
 
 /** Bookings, time off and setup for the days from `from` up to (not including) `to`. */
@@ -51,6 +54,16 @@ export async function loadSchedule(supabase: SupabaseClient, from: string, to: s
   ]);
   const failed = [stylists, services, hours, sHours, closed, bookings, timeOff].find((r) => r.error);
   if (failed?.error) throw new Error(failed.error.message);
+
+  const { data: waiting } = await supabase
+    .from("bookings")
+    .select("id, stylist_id, service_id, starts_at, ends_at, status, source, note, client:clients(id, name, phone, email), service:services(name)")
+    .eq("status", "pending")
+    .gt("ends_at", new Date().toISOString())
+    .order("starts_at");
+  const pending = await Promise.all(
+    ((waiting ?? []) as unknown as ScheduleBooking[]).map(async (b) => ({ ...b, stillFree: await isStillFree(supabase, b) })),
+  );
   return {
     from,
     to,
@@ -61,6 +74,7 @@ export async function loadSchedule(supabase: SupabaseClient, from: string, to: s
     closedDates: (closed.data ?? []).map((d) => d.day),
     bookings: bookings.data as unknown as ScheduleBooking[],
     timeOff: timeOff.data as TimeOff[],
+    pending,
   };
 }
 

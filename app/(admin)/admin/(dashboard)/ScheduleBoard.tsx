@@ -6,12 +6,15 @@ import type { Schedule, ScheduleBooking } from "@/lib/booking/staff";
 import { addDays, formatMinutes, laDay, laMinutes, minutesToTime, timeToMinutes, weekdayOf } from "@/lib/booking/time";
 import type { TimeOff } from "@/lib/booking/types";
 import BookingModal, { type ModalState } from "./BookingModal";
+import PendingList from "./PendingList";
 import TimeOffModal from "./TimeOffModal";
 
 const ROW = 22; // pixels per 15 minutes
 const colors = ["#c9a24a", "#6f8f7a", "#8a6f9e", "#b0675a", "#5f7f9c", "#9c8a5f"];
 
 const statusStyle: Record<string, string> = {
+  pending: "bg-[#fbf4e2] text-ink outline-dashed outline-1 outline-gold",
+  declined: "bg-white/70 text-muted line-through ring-1 ring-line",
   booked: "bg-ink text-white",
   completed: "bg-[#e6efe8] text-ink",
   no_show: "bg-white text-[#a3341f] ring-1 ring-[#a3341f]",
@@ -24,7 +27,7 @@ export default function ScheduleBoard({ schedule, day, view }: { schedule: Sched
   const [showCancelled, setShowCancelled] = useState(false);
 
   const colorOf = (stylistId: string) => colors[Math.max(0, schedule.stylists.findIndex((s) => s.id === stylistId)) % colors.length];
-  const visible = schedule.bookings.filter((b) => showCancelled || b.status !== "cancelled");
+  const visible = schedule.bookings.filter((b) => showCancelled || (b.status !== "cancelled" && b.status !== "declined"));
 
   if (schedule.stylists.length === 0) {
     return (
@@ -36,6 +39,7 @@ export default function ScheduleBoard({ schedule, day, view }: { schedule: Sched
 
   return (
     <div className="mt-6">
+      <PendingList pending={schedule.pending} stylists={schedule.stylists} onOpen={(b) => setModal({ mode: "edit", booking: b })} />
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <button
           type="button"
@@ -53,7 +57,7 @@ export default function ScheduleBoard({ schedule, day, view }: { schedule: Sched
         </button>
         <label className="ml-auto flex items-center gap-2 text-[14px]">
           <input type="checkbox" checked={showCancelled} onChange={(e) => setShowCancelled(e.target.checked)} className="h-4 w-4 accent-[#141210]" />
-          Show cancelled
+          Show cancelled & declined
         </label>
       </div>
 
@@ -214,6 +218,7 @@ function DayGrid({
                       <span className="block opacity-80">
                         {b.service.name}
                         {b.source !== "online" && ` · ${b.source === "phone" ? "phone" : "walk-in"}`}
+                        {b.status === "pending" && " · pending"}
                         {b.status === "no_show" && " · no-show"}
                         {b.status === "completed" && " · done"}
                       </span>

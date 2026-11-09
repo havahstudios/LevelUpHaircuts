@@ -3,8 +3,8 @@
 import { useEffect, useState, useTransition, type FormEvent } from "react";
 import type { Schedule, ScheduleBooking } from "@/lib/booking/staff";
 import { formatWhen, laDay, laMinutes, minutesToTime, formatMinutes } from "@/lib/booking/time";
-import { formatDuration, type BookingStatus } from "@/lib/booking/types";
-import { saveBookingAction, searchClientsAction, setStatusAction } from "./schedule-actions";
+import { formatDuration, statusLabel, type BookingStatus } from "@/lib/booking/types";
+import { decideAction, saveBookingAction, searchClientsAction, setStatusAction } from "./schedule-actions";
 
 export type ModalState = { mode: "new"; day: string; time: string; stylistId: string } | { mode: "edit"; booking: ScheduleBooking };
 
@@ -63,6 +63,16 @@ export default function BookingModal({ state, schedule, onClose }: { state: Moda
     });
   }
 
+  function decide(decision: "accept" | "decline") {
+    if (!editing) return;
+    setError("");
+    start(async () => {
+      const result = await decideAction(editing.id, decision);
+      if (result.ok) onClose();
+      else setError(result.message);
+    });
+  }
+
   function status(next: BookingStatus, confirmText?: string) {
     if (!editing || (confirmText && !confirm(confirmText))) return;
     setError("");
@@ -83,9 +93,15 @@ export default function BookingModal({ state, schedule, onClose }: { state: Moda
           <div>
             <h2 className="text-[28px]">{editing ? "Booking" : "Add booking"}</h2>
             {editing && (
-              <p className="mt-1 text-[14px]">
-                {formatWhen(editing.starts_at)} · {editing.status.replace("_", "-")} · booked {editing.source === "online" ? "online" : editing.source === "phone" ? "by phone" : "as walk-in"}
-              </p>
+              <>
+                <p className="mt-1 text-[14px]">
+                  {formatWhen(editing.starts_at)} · booked {editing.source === "online" ? "online" : editing.source === "phone" ? "by phone" : "as walk-in"}
+                </p>
+                <p className="mt-2 text-[14px]">
+                  Status:{" "}
+                  <span className={`font-bold ${editing.status === "pending" ? "text-gold-deep" : "text-ink"}`}>{statusLabel[editing.status]}</span>
+                </p>
+              </>
             )}
           </div>
           <button type="button" onClick={onClose} className="grid h-11 w-11 shrink-0 place-items-center text-3xl leading-none text-ink" aria-label="Close">
@@ -208,7 +224,21 @@ export default function BookingModal({ state, schedule, onClose }: { state: Moda
           </div>
         </form>
 
-        {editing && (
+        {editing?.status === "pending" && (
+          <div className="mt-6 rounded-[6px] border border-gold bg-[#fbf4e2] p-4">
+            <p className="text-[14px] font-bold text-ink">This online booking is waiting for you.</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button type="button" disabled={pending} onClick={() => decide("accept")} className="h-11 rounded-[4px] bg-gold px-5 text-[14px] font-bold text-ink">
+                Accept
+              </button>
+              <button type="button" disabled={pending} onClick={() => decide("decline")} className="h-11 rounded-[4px] border border-ink bg-white px-5 text-[14px] font-bold text-ink">
+                Decline
+              </button>
+            </div>
+          </div>
+        )}
+
+        {editing && editing.status !== "pending" && (
           <div className="mt-6 border-t border-line pt-6">
             <p className={label}>Mark as</p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -222,12 +252,12 @@ export default function BookingModal({ state, schedule, onClose }: { state: Moda
                   No-show
                 </button>
               )}
-              {editing.status !== "booked" && (
+              {editing.status !== "booked" && editing.status !== "declined" && (
                 <button type="button" disabled={pending} onClick={() => status("booked")} className="h-11 rounded-[4px] border border-line bg-white px-4 text-[14px] font-bold text-ink">
                   Back to booked
                 </button>
               )}
-              {editing.status !== "cancelled" && (
+              {editing.status !== "cancelled" && editing.status !== "declined" && (
                 <button
                   type="button"
                   disabled={pending}

@@ -17,7 +17,7 @@ const faqs = [
   },
   {
     q: "How does booking an appointment work?",
-    a: "Book online: pick a service, a stylist (or any stylist) and an open time, and it is confirmed straight away. You can also call and we add you to the same schedule.",
+    a: "Book online: pick a service, a stylist (or any stylist) and an open time. Your time is held while the salon confirms, and you get an email once it does. You can also call and we add you to the same schedule.",
   },
   {
     q: "Do you cut men's and kids' hair?",

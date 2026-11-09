@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createStaffBooking, type CreateResult } from "@/lib/booking/bookings";
+import { createStaffBooking, decideBooking, type CreateResult } from "@/lib/booking/bookings";
 import { addTimeOff, removeTimeOff, searchClients, setBookingStatus, updateBooking, type ActionResult } from "@/lib/booking/staff";
 import type { BookingSource, BookingStatus } from "@/lib/booking/types";
 import { getSupabaseAuth, requireStaff } from "@/lib/supabase/auth";
@@ -36,6 +36,15 @@ export async function setStatusAction(id: string, status: BookingStatus): Promis
   const result = await setBookingStatus(await getSupabaseAuth(), id, status);
   revalidatePath("/admin");
   return result;
+}
+
+export async function decideAction(id: string, decision: "accept" | "decline"): Promise<ActionResult> {
+  console.log("[admin] decide booking start", decision);
+  await requireStaff();
+  const result = await decideBooking(await getSupabaseAuth(), id, decision);
+  revalidatePath("/admin");
+  console.log("[admin] decide booking end", result.ok);
+  return result.ok ? { ok: true } : { ok: false, message: result.message };
 }
 
 export async function addTimeOffAction(input: { stylistId: string; day: string; from: string; to: string; reason: string }): Promise<ActionResult> {

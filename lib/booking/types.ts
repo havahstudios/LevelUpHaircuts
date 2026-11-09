@@ -24,7 +24,19 @@ export type Settings = {
 export type SalonHours = { weekday: number; opens: string | null; closes: string | null; closed: boolean };
 export type StylistHours = { stylist_id: string; weekday: number; starts: string | null; ends: string | null; off: boolean };
 export type TimeOff = { id: string; stylist_id: string | null; starts_at: string; ends_at: string; reason: string };
-export type BookingStatus = "booked" | "cancelled" | "completed" | "no_show";
+export type BookingStatus = "pending" | "booked" | "declined" | "cancelled" | "completed" | "no_show";
+
+/** Statuses that hold a stylist's time (match the database's no-overlap rule). */
+export const HOLDING_STATUSES: BookingStatus[] = ["pending", "booked", "completed"];
+
+export const statusLabel: Record<BookingStatus, string> = {
+  pending: "Waiting for approval",
+  booked: "Booked",
+  declined: "Declined",
+  cancelled: "Cancelled",
+  completed: "Completed",
+  no_show: "No-show",
+};
 export type BookingSource = "online" | "phone" | "walk_in";
 
 export type Booking = {

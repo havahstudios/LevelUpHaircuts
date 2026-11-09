@@ -3,12 +3,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { findSlots, loadDay, pickStylist } from "@/lib/booking/availability";
 import { sendBookingEmails } from "@/lib/booking/email";
 import { isDayString, laDay, laToUtc } from "@/lib/booking/time";
-import type { BookingSource, Service } from "@/lib/booking/types";
+import { HOLDING_STATUSES, type BookingSource, type BookingStatus, type Service } from "@/lib/booking/types";
 
 export type ClientInput = { name: string; phone: string; email: string };
 
 export type CreateResult =
-  | { ok: true; bookingId: string; manageCode: string; startsAt: string; stylistName: string; serviceName: string }
+  | { ok: true; bookingId: string; manageCode: string; startsAt: string; stylistName: string; serviceName: string; status: string }
   | { ok: false; reason: "invalid" | "taken" | "error"; message: string; fields?: Record<string, string> };
 
 const clean = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -116,6 +116,8 @@ async function insertBooking(
     createdBy: string | null;
   },
 ): Promise<CreateResult> {
+  // Online bookings wait for the salon to accept; staff bookings are confirmed.
+  const status = b.source === "online" ? "pending" : "booked";
   try {
     const clientId = await findOrCreateClient(supabase, b.client);
     const endsAt = new Date(b.startsAt.getTime() + b.service.duration_minutes * 60000);
@@ -127,11 +129,12 @@ async function insertBooking(
         service_id: b.service.id,
         starts_at: b.startsAt.toISOString(),
         ends_at: endsAt.toISOString(),
+        status,
         source: b.source,
         note: b.note,
         created_by: b.createdBy,
       })
-      .select("id, manage_code, stylists(name)")
+      .select("id, manage_code, respond_code, stylists(name)")
       .single();
 
     if (error?.code === "23P01") return { ok: false, reason: "taken", message: "That stylist is already booked at that time." };
@@ -145,8 +148,14 @@ async function insertBooking(
       startsAt: b.startsAt.toISOString(),
       stylistName,
       serviceName: b.service.name,
+      status,
     };
-    await sendBookingEmails("new", { ...result, client: b.client, source: b.source });
+    await sendBookingEmails(status === "pending" ? "request" : "staff_booked", {
+      ...result,
+      respondCode: data.respond_code,
+      stillFree: true,
+      client: b.client,
+    });
     return result;
   } catch (error) {
     console.error("[booking] save failed", error);
@@ -154,30 +163,90 @@ async function insertBooking(
   }
 }
 
-/** Customer cancels from the link in their email. */
+const bookingSelect = "id, status, starts_at, ends_at, stylist_id, manage_code, respond_code, client:clients(name, phone, email), service:services(name), stylist:stylists(name)";
+
+type FullBooking = {
+  id: string;
+  status: BookingStatus;
+  starts_at: string;
+  ends_at: string;
+  stylist_id: string;
+  manage_code: string;
+  respond_code: string;
+  client: ClientInput;
+  service: { name: string };
+  stylist: { name: string };
+};
+
+function emailFields(b: FullBooking) {
+  return { startsAt: b.starts_at, stylistName: b.stylist.name, serviceName: b.service.name, manageCode: b.manage_code, client: b.client };
+}
+
+/** The booking behind an Accept / Decline link, or null. */
+export async function getByRespondCode(supabase: SupabaseClient, code: string): Promise<FullBooking | null> {
+  if (!/^[a-f0-9]{64}$/.test(code)) return null;
+  const { data } = await supabase.from("bookings").select(bookingSelect).eq("respond_code", code).maybeSingle();
+  return data as unknown as FullBooking | null;
+}
+
+/**
+ * Is the stylist still free for this booking? Checks other live bookings and
+ * time off that overlap it (the booking itself is ignored).
+ */
+export async function isStillFree(supabase: SupabaseClient, b: Pick<FullBooking, "id" | "stylist_id" | "starts_at" | "ends_at">): Promise<boolean> {
+  const [clash, off] = await Promise.all([
+    supabase
+      .from("bookings")
+      .select("id")
+      .eq("stylist_id", b.stylist_id)
+      .neq("id", b.id)
+      .in("status", HOLDING_STATUSES)
+      .lt("starts_at", b.ends_at)
+      .gt("ends_at", b.starts_at)
+      .limit(1),
+    supabase.from("time_off").select("id").or(`stylist_id.is.null,stylist_id.eq.${b.stylist_id}`).lt("starts_at", b.ends_at).gt("ends_at", b.starts_at).limit(1),
+  ]);
+  return !(clash.data?.length || off.data?.length);
+}
+
+/**
+ * The salon accepts or declines a pending online booking. Used by the email
+ * link (service-role client, after checking the private code) and by the
+ * dashboard (staff client). Only a pending booking can be decided, so a link
+ * cannot be used twice.
+ */
+export async function decideBooking(supabase: SupabaseClient, bookingId: string, decision: "accept" | "decline") {
+  const { data } = await supabase.from("bookings").select(bookingSelect).eq("id", bookingId).maybeSingle();
+  const booking = data as unknown as FullBooking | null;
+  if (!booking) return { ok: false as const, message: "We could not find that booking." };
+  if (booking.status !== "pending") return { ok: false as const, message: `This booking was already answered (${booking.status}).` };
+
+  const status = decision === "accept" ? "booked" : "declined";
+  const { data: updated, error } = await supabase
+    .from("bookings")
+    .update({ status, decided_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq("id", bookingId)
+    .eq("status", "pending") // only if nobody answered in the meantime
+    .select("id");
+  if (error) return { ok: false as const, message: error.message };
+  if (!updated?.length) return { ok: false as const, message: "This booking was already answered." };
+
+  await sendBookingEmails(decision === "accept" ? "accepted" : "declined", emailFields(booking));
+  return { ok: true as const, status };
+}
+
+/** Customer cancels from the link in their email (pending or booked). */
 export async function cancelByCode(supabase: SupabaseClient, code: unknown) {
   if (typeof code !== "string" || !/^[a-f0-9]{64}$/.test(code)) return { ok: false as const, message: "That link is not valid." };
-  const { data: booking } = await supabase
-    .from("bookings")
-    .select("id, status, starts_at, manage_code, clients(name, phone, email), services(name), stylists(name)")
-    .eq("manage_code", code)
-    .maybeSingle();
+  const { data } = await supabase.from("bookings").select(bookingSelect).eq("manage_code", code).maybeSingle();
+  const booking = data as unknown as FullBooking | null;
   if (!booking) return { ok: false as const, message: "We could not find that booking." };
-  if (booking.status !== "booked") return { ok: false as const, message: "This booking is already cancelled or finished." };
+  if (booking.status !== "booked" && booking.status !== "pending") return { ok: false as const, message: "This booking is already cancelled or finished." };
   if (Date.parse(booking.starts_at) < Date.now()) return { ok: false as const, message: "This appointment has already started." };
 
   const { error } = await supabase.from("bookings").update({ status: "cancelled", updated_at: new Date().toISOString() }).eq("id", booking.id);
   if (error) return { ok: false as const, message: "Something went wrong. Please call the salon." };
 
-  const client = booking.clients as unknown as ClientInput;
-  await sendBookingEmails("cancelled", {
-    bookingId: booking.id,
-    manageCode: booking.manage_code,
-    startsAt: booking.starts_at,
-    stylistName: (booking.stylists as unknown as { name: string }).name,
-    serviceName: (booking.services as unknown as { name: string }).name,
-    client,
-    source: "online",
-  });
+  await sendBookingEmails("cancelled", emailFields(booking));
   return { ok: true as const };
 }

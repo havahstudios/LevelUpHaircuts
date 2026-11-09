@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { addDays, laDay, laToUtc, minutesToTime, timeToMinutes, weekdayOf, formatMinutes } from "@/lib/booking/time";
-import type { Booking, SalonHours, Service, Settings, StylistHours, TimeOff } from "@/lib/booking/types";
+import { HOLDING_STATUSES, type Booking, type SalonHours, type Service, type Settings, type StylistHours, type TimeOff } from "@/lib/booking/types";
 
 // Works out which start times are free on one day. The pure part
 // (findSlots) is separate from the database part (loadDay) so it is easy to test.
@@ -51,7 +51,7 @@ export function findSlots(data: DayData, service: Pick<Service, "id" | "duration
 
   const busy = (id: string): Range[] => [
     ...data.bookings
-      .filter((b) => b.stylist_id === id && (b.status === "booked" || b.status === "completed"))
+      .filter((b) => b.stylist_id === id && HOLDING_STATUSES.includes(b.status))
       .map((b): Range => [Date.parse(b.starts_at), Date.parse(b.ends_at)]),
     ...data.timeOff
       .filter((t) => t.stylist_id === null || t.stylist_id === id)
@@ -83,7 +83,7 @@ export function findSlots(data: DayData, service: Pick<Service, "id" | "duration
 
 /** For "any stylist": the free stylist with the fewest bookings that day. */
 export function pickStylist(data: DayData, ids: string[]): string {
-  const count = (id: string) => data.bookings.filter((b) => b.stylist_id === id && b.status === "booked").length;
+  const count = (id: string) => data.bookings.filter((b) => b.stylist_id === id && b.status !== "completed").length;
   const order = (id: string) => data.stylists.find((s) => s.id === id)?.sort ?? 0;
   return [...ids].sort((a, b) => count(a) - count(b) || order(a) - order(b))[0];
 }
@@ -102,7 +102,7 @@ export async function loadDay(supabase: SupabaseClient, day: string): Promise<Da
     supabase.from("stylist_hours").select("*").eq("weekday", weekday),
     supabase.from("stylist_services").select("stylist_id, service_id"),
     supabase.from("time_off").select("*").lt("starts_at", dayEnd).gt("ends_at", dayStart),
-    supabase.from("bookings").select("stylist_id, starts_at, ends_at, status").lt("starts_at", dayEnd).gt("ends_at", dayStart).in("status", ["booked", "completed"]),
+    supabase.from("bookings").select("stylist_id, starts_at, ends_at, status").lt("starts_at", dayEnd).gt("ends_at", dayStart).in("status", HOLDING_STATUSES),
   ]);
 
   const failed = [settings, salon, closed, stylists, hours, links, timeOff, bookings].find((r) => r.error);

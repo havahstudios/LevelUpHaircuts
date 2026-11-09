@@ -11,7 +11,7 @@ export default function BookCta() {
         <div>
           <SectionHeading before="Book your" underline="appointment" />
           <p className="mt-6 max-w-[460px]">
-            Pick your service, your stylist (or whoever is free) and a time that suits you. You&apos;ll see only the times that are really open, and your booking is confirmed straight away.
+            Pick your service, your stylist (or whoever is free) and a time that suits you. You&apos;ll only see times that are really open, and the salon confirms your request by email.
           </p>
           <Link href="/book" className="group mt-10 inline-flex items-center gap-3 rounded-[4px] bg-gold px-8 py-4 text-[14px] font-bold text-ink">
             <SwitchText>Book online</SwitchText>

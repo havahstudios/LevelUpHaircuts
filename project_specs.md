@@ -275,7 +275,7 @@ The one long homepage is split into five pages. The header and footer link betwe
 
 ---
 
-# Phase 3b: Salon accepts or declines online bookings (waiting for approval)
+# Phase 3b: Salon accepts or declines online bookings (approved Sunday 8 November 2026, built, waiting for migration 0002)
 
 Owner request: when a booking comes in, the salon gets an email with buttons to **accept or decline** it, and each booking shows its **status** and whether **the time is still available**.
 

@@ -8,7 +8,9 @@ export const metadata: Metadata = { title: "Your booking | Level-Up Hair Salon",
 export const dynamic = "force-dynamic";
 
 const statusText: Record<string, string> = {
-  booked: "Booked",
+  pending: "Waiting for the salon to confirm",
+  booked: "Confirmed",
+  declined: "The salon couldn't fit you in. Please pick another time",
   cancelled: "Cancelled",
   completed: "Completed",
   no_show: "Missed",
@@ -61,7 +63,7 @@ export default async function ManageBookingPage({ params }: PageProps<"/book/man
                   <dd className="text-right font-bold text-ink">{formatWhen(booking.starts_at)}</dd>
                 </div>
               </dl>
-              {booking.status === "booked" && isUpcoming(booking.starts_at) && <CancelButton code={code} />}
+              {(booking.status === "booked" || booking.status === "pending") && isUpcoming(booking.starts_at) && <CancelButton code={code} />}
             </>
           )}
           <Link href="/book" className="mt-8 inline-block font-bold text-ink underline decoration-gold underline-offset-4">

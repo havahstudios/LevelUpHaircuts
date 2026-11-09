@@ -9,7 +9,7 @@ import { addDays, formatDay, formatWhen, laDay, weekdayOf } from "@/lib/booking/
 import { formatDuration, formatPrice, type Service } from "@/lib/booking/types";
 
 type Slot = { label: string; startsAt: string };
-type Done = { startsAt: string; stylistName: string; serviceName: string; manageCode: string };
+type Done = { startsAt: string; stylistName: string; serviceName: string; manageCode: string; status: string };
 type Step = 1 | 2 | 3 | 4;
 
 const field =
@@ -398,7 +398,7 @@ function DetailsStep({
         </Field>
         <div className="mt-6 sm:col-span-2">
           <button type="submit" disabled={sending} className="group inline-flex items-center gap-3 rounded-[4px] bg-gold px-8 py-4 text-[14px] font-bold text-ink disabled:opacity-60">
-            {sending ? "Booking..." : <SwitchText>Confirm booking</SwitchText>}
+            {sending ? "Sending..." : <SwitchText>Request booking</SwitchText>}
           </button>
           {message && (
             <p role="alert" className="mt-4 text-[15px] font-bold text-[#a3341f]">
@@ -414,14 +414,18 @@ function DetailsStep({
 function Confirmation({ done }: { done: Done }) {
   return (
     <div role="status" className="rounded-[6px] border border-line bg-white p-8 text-center md:p-14">
-      <p className="text-[12px] font-bold uppercase tracking-[0.25em] text-gold-deep">You&apos;re booked</p>
-      <h2 className="mt-4 text-[38px] leading-[1.1] md:text-[52px]">See you soon</h2>
+      <p className="text-[12px] font-bold uppercase tracking-[0.25em] text-gold-deep">{done.status === "pending" ? "Request sent" : "You're booked"}</p>
+      <h2 className="mt-4 text-[38px] leading-[1.1] md:text-[52px]">{done.status === "pending" ? "Almost there" : "See you soon"}</h2>
       <p className="mx-auto mt-6 max-w-[460px] text-[17px] text-ink">
         {done.serviceName} with {done.stylistName}
         <br />
         {formatWhen(done.startsAt)}
       </p>
-      <p className="mx-auto mt-4 max-w-[460px]">Save this page. If you need to cancel, use the link below.</p>
+      <p className="mx-auto mt-4 max-w-[460px]">
+        {done.status === "pending"
+          ? "Your time is held while the salon confirms. Check your booking page for updates, or cancel there if your plans change."
+          : "Save this page. If you need to cancel, use the link below."}
+      </p>
       <div className="mt-8 flex flex-wrap justify-center gap-6">
         <Link href={`/book/manage/${done.manageCode}`} className="font-bold text-ink underline decoration-gold underline-offset-4">
           View or cancel this booking
