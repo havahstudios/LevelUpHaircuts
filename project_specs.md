@@ -341,3 +341,4 @@ This replaces "instant booking" (Phase 3 decision) for **online** bookings only.
 ## Favicon and clean-up (Sunday 8 November 2026, owner request)
 - Favicon replaced (was the Next.js default): black rounded square with "L-U" in serif, gold dash, matching the wordmark. `app/favicon.ico` (16 to 64px), `app/icon.png` (512px), `app/apple-icon.png` (iPhone home screen)
 - Old cancelled test booking (Hair styling, 11 November) deleted. The owner's newer Cut and colour test on 12 November kept
+- Home photo row and late-opening block (owner: "too stuck together and too dark"): space added below the photo row; brighter photos (haircut, braided updo, soft curls); the dark "Open until 7pm" photo banner became a light cream card with a bright wash-basin photo beside the message and a gold "Book an evening visit" button
