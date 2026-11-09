@@ -1,0 +1,9 @@
+# Level-Up Hair Salon
+
+> Family-owned unisex hair salon in Rancho Park, Los Angeles. Haircuts, cut and colour, blow-drys and styling, perms and chemical treatments for women, men and kids.
+
+- Address: 10962 W Pico Blvd, Los Angeles, CA 90064
+- Hours: Monday to Wednesday 9am to 6pm, Thursday and Friday 9am to 7pm, Saturday 9am to 6pm, closed Sunday
+- Book: request an appointment on the homepage form
+- Reviews: https://www.yelp.com/biz/level-up-hair-salon-los-angeles
+- Instagram: https://www.instagram.com/level_uphairsalon/
