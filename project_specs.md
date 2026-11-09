@@ -268,3 +268,51 @@ The one long homepage is split into five pages. The header and footer link betwe
 - Home hero uses the bright salon interior photo with a lighter tint
 - Staff dashboard sidebar and login are light
 - Note: the project sits on an iCloud-synced Desktop, which creates "file 2" copies inside `.next/` during builds. Harmless (`.next` is not in git); delete `.next` if a build complains
+
+## Live on Vercel (Sunday 8 November 2026)
+- Supabase keys and `NEXT_PUBLIC_SITE_URL` added to Vercel (Production). https://level-up-hair-salon.vercel.app now books against the real database; free times, services and the staff login all work live
+- Owner login: havahstudios@gmail.com (password set by the owner in Supabase), on the staff list as Owner
+
+---
+
+# Phase 3b: Salon accepts or declines online bookings (waiting for approval)
+
+Owner request: when a booking comes in, the salon gets an email with buttons to **accept or decline** it, and each booking shows its **status** and whether **the time is still available**.
+
+This replaces "instant booking" (Phase 3 decision) for **online** bookings only. Phone and walk-in bookings added by staff stay booked straight away.
+
+## How it works
+1. A customer books on `/book` as now. The booking is saved as **Pending** and the time is held, so nobody else can take it while the salon decides
+2. The customer sees "Request sent. We'll email you as soon as the salon confirms", and gets a "request received" email
+3. The salon gets an email with the client, service, stylist and time, plus:
+   - **Status:** Waiting for you
+   - **Availability:** "Norma is free at this time" (checked when the email is sent)
+   - Two buttons: **Accept** and **Decline**
+4. Clicking a button opens a page on the site (no login needed, secured by a private link) that shows the booking, its current status and a live availability check, with one tap to confirm Accept or Decline. A confirm tap is needed because some email programs open links automatically to scan them, which must never accept a booking by itself
+5. **Accept**: status becomes Booked, the customer gets a confirmation email with their cancel link
+6. **Decline**: status becomes Declined, the time is freed, the customer gets a polite "we couldn't fit you in, please pick another time" email with a link to `/book`
+7. The private link only works while the booking is still Pending
+
+## In the dashboard
+- Pending bookings show on the schedule in gold outline with a **Pending** label
+- A **Waiting for approval** list at the top of the schedule, newest first, each with Accept and Decline buttons and the availability check
+- Opening any booking shows a **Status** line (Pending, Booked, Declined, Cancelled, Completed, No-show) and, for pending ones, **Accept / Decline** buttons
+
+## Database change
+- New file `supabase/migrations/0002_approval.sql` (you run it once in the SQL Editor, like the first one):
+  - Two new statuses: `pending` and `declined`
+  - Pending bookings hold their time (count in the no-double-booking rule); declined ones do not
+  - A private `respond_code` on each booking for the Accept / Decline links
+
+## Emails (Resend)
+- Needs a Resend API key
+- Until the salon has its own verified domain, Resend only delivers to the account owner's own email. So at first the **salon emails (with the Accept / Decline buttons) go to havahstudios@gmail.com**, and customer emails wait for the domain. Customers still see their status on screen and on their booking link
+- Once a domain is verified, customer emails switch on with no code change (one setting)
+
+## What "done" looks like
+- Online booking creates a Pending booking that holds the time
+- The salon email arrives with Accept / Decline buttons, status and availability
+- Accept and Decline work from the email and from the dashboard, and update the customer's booking page
+- A link cannot be used twice or after the booking changed
+- Pending bookings are clearly marked on the schedule with a waiting list
+- Tested end to end locally and on the live link
