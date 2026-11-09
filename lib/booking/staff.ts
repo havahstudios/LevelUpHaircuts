@@ -1,6 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { isStillFree } from "@/lib/booking/bookings";
+import { findClash, isStillFree } from "@/lib/booking/bookings";
 import { addDays, isDayString, laToUtc } from "@/lib/booking/time";
 import type { BookingStatus, SalonHours, Service, Stylist, StylistHours, TimeOff } from "@/lib/booking/types";
 
@@ -96,6 +96,14 @@ export async function updateBooking(
 
   const startsAt = laToUtc(input.day, input.time);
   const endsAt = new Date(startsAt.getTime() + service.duration_minutes * 60000);
+  const clash = await findClash(supabase, {
+    clientId: booking.client_id,
+    stylistId: input.stylistId,
+    startsAt: startsAt.toISOString(),
+    endsAt: endsAt.toISOString(),
+    ignoreBookingId: input.id,
+  });
+  if (clash) return { ok: false, message: clash };
   const { error } = await supabase
     .from("bookings")
     .update({

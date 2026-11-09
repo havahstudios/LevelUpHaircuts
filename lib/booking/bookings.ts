@@ -121,6 +121,8 @@ async function insertBooking(
   try {
     const clientId = await findOrCreateClient(supabase, b.client);
     const endsAt = new Date(b.startsAt.getTime() + b.service.duration_minutes * 60000);
+    const clash = await findClash(supabase, { clientId, stylistId: b.stylistId, startsAt: b.startsAt.toISOString(), endsAt: endsAt.toISOString() });
+    if (clash) return { ok: false, reason: "taken", message: clash };
     const { data, error } = await supabase
       .from("bookings")
       .insert({
@@ -161,6 +163,34 @@ async function insertBooking(
     console.error("[booking] save failed", error);
     return { ok: false, reason: "error", message: "Something went wrong saving the booking. Please try again." };
   }
+}
+
+/**
+ * Catches accidental double bookings the database rule cannot see on its own:
+ * the same client already booked at an overlapping time (for example a
+ * double-click with "Any stylist" picking two different stylists), or the
+ * stylist having blocked time then. Returns a message, or null if all clear.
+ * The database still refuses two overlapping bookings for one stylist.
+ */
+export async function findClash(
+  supabase: SupabaseClient,
+  t: { clientId?: string; stylistId: string; startsAt: string; endsAt: string; ignoreBookingId?: string },
+): Promise<string | null> {
+  if (t.clientId) {
+    let q = supabase.from("bookings").select("id").eq("client_id", t.clientId).in("status", HOLDING_STATUSES).lt("starts_at", t.endsAt).gt("ends_at", t.startsAt).limit(1);
+    if (t.ignoreBookingId) q = q.neq("id", t.ignoreBookingId);
+    const { data } = await q;
+    if (data?.length) return "This client already has a booking at that time.";
+  }
+  const { data: off } = await supabase
+    .from("time_off")
+    .select("id")
+    .or(`stylist_id.is.null,stylist_id.eq.${t.stylistId}`)
+    .lt("starts_at", t.endsAt)
+    .gt("ends_at", t.startsAt)
+    .limit(1);
+  if (off?.length) return "That time is blocked off for this stylist. Remove the block first if you want to book it.";
+  return null;
 }
 
 const bookingSelect = "id, status, starts_at, ends_at, stylist_id, manage_code, respond_code, client:clients(name, phone, email), service:services(name), stylist:stylists(name)";
@@ -220,6 +250,9 @@ export async function decideBooking(supabase: SupabaseClient, bookingId: string,
   const booking = data as unknown as FullBooking | null;
   if (!booking) return { ok: false as const, message: "We could not find that booking." };
   if (booking.status !== "pending") return { ok: false as const, message: `This booking was already answered (${booking.status}).` };
+  if (decision === "accept" && !(await isStillFree(supabase, booking))) {
+    return { ok: false as const, message: "This time now clashes with blocked time. Move the booking or remove the block before accepting." };
+  }
 
   const status = decision === "accept" ? "booked" : "declined";
   const { data: updated, error } = await supabase
