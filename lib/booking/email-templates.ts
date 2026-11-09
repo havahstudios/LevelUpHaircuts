@@ -29,6 +29,12 @@ const C = {
 const serif = "Georgia, 'Times New Roman', serif";
 const sans = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif";
 
+// Gmail and Apple Mail turn addresses and emails into blue links on their own.
+// Wrapping them in our own styled links keeps the design's colours.
+const addressLink = (color: string) =>
+  `<a href="${site.mapsUrl}" target="_blank" style="color:${color};text-decoration:none">${esc(fullAddress)}</a>`;
+const mailLink = (email: string) => `<a href="mailto:${esc(email)}" style="color:${C.ink};text-decoration:none">${esc(email)}</a>`;
+
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
 type Button = { label: string; href: string; style: "primary" | "secondary" };
@@ -57,7 +63,7 @@ function shell(opts: { preheader: string; tag: string; tagColor?: string; title:
     .join("");
 
   return `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><title>${esc(opts.title)}</title></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="format-detection" content="telephone=no,date=no,address=no,email=no"><style>a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important}</style><title>${esc(opts.title)}</title></head>
 <body style="margin:0;padding:0;background:${C.cream};-webkit-text-size-adjust:100%">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:${C.cream}">${esc(opts.preheader)}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${C.cream}" style="background:${C.cream}">
@@ -91,7 +97,7 @@ function shell(opts: { preheader: string; tag: string; tagColor?: string; title:
     </td></tr>
 
     <tr><td align="center" style="padding:24px 10px 0;font-family:${sans};font-size:12px;line-height:1.7;color:${C.muted}">
-      ${esc(site.name)} · ${esc(fullAddress)}<br>
+      ${esc(site.name)} · ${addressLink(C.muted)}<br>
       <a href="${site.social.instagram}" style="color:${C.goldDeep};text-decoration:none">Instagram</a> &nbsp;·&nbsp;
       <a href="${site.social.yelp}" style="color:${C.goldDeep};text-decoration:none">Yelp</a>
     </td></tr>
@@ -123,7 +129,7 @@ export function salonRequestEmail(b: TemplateBooking, respondUrl: string): Email
       rows: [
         { label: "Client", value: esc(b.client.name) },
         { label: "Phone", value: `<a href="tel:${esc(b.client.phone)}" style="color:${C.ink};text-decoration:none">${esc(b.client.phone)}</a>` },
-        { label: "Email", value: esc(b.client.email || "none") },
+        { label: "Email", value: b.client.email ? mailLink(b.client.email) : "none" },
         ...details(b),
         { label: "Status", value: "Waiting for you", color: C.goldDeep },
         { label: "Availability", value: `<span style="color:${free ? C.green : C.red}">&#9679;</span> ${esc(availability)}`, color: free ? C.green : C.red },
@@ -183,7 +189,7 @@ export function customerBookedEmail(b: TemplateBooking, manageUrl: string): Emai
       tag: "Confirmed",
       tagColor: "#e6f0e8",
       title: "You're booked",
-      intro: `See you soon, ${esc(b.client.name)}. We're at ${esc(fullAddress)}.`,
+      intro: `See you soon, ${esc(b.client.name)}. We're at ${addressLink(C.ink)}.`,
       rows: details(b),
       buttons: [
         { label: "Get directions", href: site.mapsUrl, style: "primary" },
